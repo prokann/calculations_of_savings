@@ -11,6 +11,7 @@ def welcome(message):
     bot.send_message(message.chat.id, "Привіт! Це бот для підрахунку заощаджень. "
                                       "\nЄ такі команди: "
                                       "\n'/add_type' - створити новий тип заощаджень, "
+                                      "\n'/delete_type' - видалити тип, "
                                       "\n'/view_types' - переглянути всі типи, "
                                       "\n'/add_savings' - додати нові заощадження, "
                                       "\n'/withdraw_savings' - зняти заощадження.")
@@ -24,7 +25,7 @@ def commands(message):
         bot.send_message(message.chat.id, "Напишіть назву для нового типу заощадження. Якщо передумали, напишіть: 'Ні'.")
         bot.register_next_step_handler(message, new_type)
 
-    if message.text == '/view_types' or message.text == '/add_savings' or message.text == '/withdraw_savings':
+    if message.text == '/view_types' or message.text == '/add_savings' or message.text == '/withdraw_savings' or message.text == '/delete_type':
         show_types(message.chat.id, message.text)
 
 
@@ -48,6 +49,12 @@ def show_types(chat_id, command):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     bot.send_message(chat_id, "Виберіть тип заощадження: ", reply_markup=reply_markup)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('/delete_type'))
+def callback_query(call):
+    SavingsType.objects.get(id=int(call.data.split('__')[1])) .delete()
+    bot.send_message(call.message.chat.id, 'Цей тип видалено')
+
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('/view_types'))
